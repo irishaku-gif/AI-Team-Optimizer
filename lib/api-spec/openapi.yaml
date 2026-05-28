@@ -1,0 +1,435 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: employees
+    description: Employee management operations
+  - name: team
+    description: Team recommendation operations
+  - name: dashboard
+    description: Dashboard summary operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List all employees
+      responses:
+        "200":
+          description: Array of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [employees]
+      summary: Create a new employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeBody"
+      responses:
+        "201":
+          description: Created employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+
+  /employees/{id}:
+    get:
+      operationId: getEmployee
+      tags: [employees]
+      summary: Get a single employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Employee found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateEmployee
+      tags: [employees]
+      summary: Update an employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEmployeeBody"
+      responses:
+        "200":
+          description: Updated employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteEmployee
+      tags: [employees]
+      summary: Delete an employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /team/recommend:
+    post:
+      operationId: recommendTeam
+      tags: [team]
+      summary: Recommend an optimal team for a project
+      description: Picks the best team for the project based on skill, availability, and required role. Returns team members with scoring details and an AI-generated explanation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendTeamBody"
+      responses:
+        "200":
+          description: Recommended team
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamRecommendation"
+
+  /team/recommendations:
+    get:
+      operationId: listRecommendations
+      tags: [team]
+      summary: List recent saved team recommendations
+      responses:
+        "200":
+          description: List of past recommendations (most recent first)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedRecommendation"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary statistics
+      description: Returns aggregate stats — totals, average load, role breakdown, top performers.
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+          description: Employee role/specialty (e.g. "SAP", "Data", "Frontend")
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Current workload as a percentage (0-100)
+        skill:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Skill rating from 1 to 5
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - role
+        - load
+        - skill
+        - createdAt
+
+    CreateEmployeeBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+        skill:
+          type: integer
+          minimum: 1
+          maximum: 5
+      required:
+        - name
+        - role
+        - load
+        - skill
+
+    UpdateEmployeeBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+        skill:
+          type: integer
+          minimum: 1
+          maximum: 5
+
+    RecommendTeamBody:
+      type: object
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+        projectDescription:
+          type: string
+        requiredRole:
+          type: string
+          description: Optional role filter — only consider employees of this role
+        teamSize:
+          type: integer
+          minimum: 1
+          maximum: 20
+      required:
+        - projectName
+        - teamSize
+
+    ScoredEmployee:
+      type: object
+      properties:
+        employee:
+          $ref: "#/components/schemas/Employee"
+        score:
+          type: number
+          description: Computed fit score
+        availability:
+          type: integer
+          description: Available capacity (100 - load)
+      required:
+        - employee
+        - score
+        - availability
+
+    TeamRecommendation:
+      type: object
+      properties:
+        projectName:
+          type: string
+        team:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoredEmployee"
+        explanation:
+          type: string
+          description: Natural-language explanation of the choice
+        aiPowered:
+          type: boolean
+          description: Whether the explanation came from the LLM (true) or local fallback (false)
+      required:
+        - projectName
+        - team
+        - explanation
+        - aiPowered
+
+    SavedRecommendation:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectName:
+          type: string
+        teamSize:
+          type: integer
+        memberNames:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: string
+        aiPowered:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectName
+        - teamSize
+        - memberNames
+        - explanation
+        - aiPowered
+        - createdAt
+
+    RoleBreakdown:
+      type: object
+      properties:
+        role:
+          type: string
+        count:
+          type: integer
+        avgLoad:
+          type: number
+        avgSkill:
+          type: number
+      required:
+        - role
+        - count
+        - avgLoad
+        - avgSkill
+
+    TopPerformer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        skill:
+          type: integer
+        load:
+          type: integer
+      required:
+        - id
+        - name
+        - role
+        - skill
+        - load
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalEmployees:
+          type: integer
+        averageLoad:
+          type: number
+        averageSkill:
+          type: number
+        availableCapacity:
+          type: integer
+          description: Sum of (100 - load) across all employees
+        overloadedCount:
+          type: integer
+          description: Number of employees with load >= 80
+        roleBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleBreakdown"
+        topPerformers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopPerformer"
+        recentRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedRecommendation"
+      required:
+        - totalEmployees
+        - averageLoad
+        - averageSkill
+        - availableCapacity
+        - overloadedCount
+        - roleBreakdown
+        - topPerformers
+        - recentRecommendations
