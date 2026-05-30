@@ -13,6 +13,9 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 const basePath = process.env.BASE_PATH ?? "/";
+const outDir = process.env.VITE_OUT_DIR
+  ? path.resolve(import.meta.dirname, process.env.VITE_OUT_DIR)
+  : path.resolve(import.meta.dirname, "dist/public");
 const apiProxyTarget =
   process.env.API_PROXY_TARGET ??
   (process.env.NODE_ENV !== "production" ? "http://127.0.0.1:3001" : undefined);
@@ -46,7 +49,7 @@ export default defineConfig({
   },
   root: path.resolve(import.meta.dirname),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir,
     emptyOutDir: true,
   },
   server: {
