@@ -2,37 +2,44 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+AI Team Optimizer is now a production-only Vercel workspace. The React frontend is built from `artifacts/team-optimizer`, and all runtime API behavior lives in the serverless function `api/[...path].js`.
+
+There is no supported local Express API, memory storage mode, GitHub Pages static demo, or browser `localStorage` API shim.
 
 ## Stack
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- Monorepo tool: pnpm workspaces
+- Runtime target: Node.js 24 on Vercel
+- Package manager: pnpm 10.25.0
+- Frontend: React 19, Vite, Wouter, TanStack React Query, Tailwind CSS, shadcn-style components
+- API: Vercel serverless function in CommonJS JavaScript
+- Database: PostgreSQL through `pg`
+- API contract: OpenAPI plus Orval-generated React Query client
+- AI explanation: optional OpenAI-compatible chat completions call from `api/[...path].js`; deterministic fallback remains available
 
 ## Key Commands
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+- `pnpm run db:migrate` - apply `api/migrations.js` to the configured PostgreSQL database.
+- `pnpm run typecheck` - typecheck the active frontend/client workspace packages.
+- `pnpm run build` - run migrations, typecheck, and build `artifacts/team-optimizer/dist/public` for Vercel.
+- `pnpm run codegen` - regenerate `lib/api-client-react` from `lib/api-spec/openapi.yaml`.
+- `pnpm run dev` - use `vercel dev` for local Vercel-style development.
 
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+## Runtime Artifacts
 
-## Artifacts
-
-- **api-server** (`artifacts/api-server`) — Express 5 backend. Routes: `/api/employees` (CRUD), `/api/team/recommend` (AI-scored team selection), `/api/team/recommendations` (history), `/api/dashboard/summary`. Uses Replit AI Integrations (OpenAI proxy, model `gpt-5.4`) with a deterministic local fallback in `src/lib/scoring.ts` (`score = skill*2 - load/50`).
-- **team-optimizer** (`artifacts/team-optimizer`) — React + Vite frontend at `/`. Pages: Dashboard (stats + role chart + top performers + recent recs), Team Roster (CRUD with search/filter), Build Team (AI recommendation form with animated results), History (past recommendations). Uses generated React Query hooks from `@workspace/api-client-react`, shadcn/ui, recharts, framer-motion, sonner.
+- `api/[...path].js` - production API source of truth. Handles health, employees CRUD, team recommendation, saved recommendations, and dashboard summary.
+- `api/migrations.js` - ordered SQL migration list. Do not create runtime tables inside request handlers.
+- `scripts/migrate-vercel-api.mjs` - migration runner used by `pnpm run db:migrate` and the production build.
+- `artifacts/team-optimizer` - React/Vite frontend.
+- `lib/api-spec/openapi.yaml` - API contract used for generated client code.
+- `lib/api-client-react` - generated React Query client and custom fetch wrapper.
 
 ## Database
 
-PostgreSQL via `@workspace/db` (Drizzle).
-- `employees` — id, name, role, load (0-100), skill (1-5), createdAt
-- `recommendations` — id, projectName, projectDescription, requiredRole, teamSize, employeeIds (jsonb), explanation, aiPowered, createdAt
+The production database is PostgreSQL. Migrations create and evolve these tables:
+
+- `schema_migrations` - applied migration ids.
+- `employees` - id, name, role, load, skill, createdAt.
+- `recommendations` - id, projectName, optional projectDescription, optional requiredRole, teamSize, memberNames, explanation, aiPowered, createdAt.
+
+Every deployment must have a PostgreSQL connection string available as `DATABASE_URL`, `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, `DATABASE_URL_UNPOOLED`, or `POSTGRES_PRISMA_URL`.

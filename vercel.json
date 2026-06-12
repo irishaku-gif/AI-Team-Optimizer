@@ -1,6 +1,6 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @workspace/team-optimizer run build",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "artifacts/team-optimizer/dist/public",
   "rewrites": [
     {

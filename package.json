@@ -5,13 +5,12 @@
   "packageManager": "pnpm@10.25.0",
   "scripts": {
     "preinstall": "node ./scripts/ensure-pnpm.mjs",
-    "dev": "node ./scripts/dev.mjs",
-    "dev:api": "pnpm --filter @workspace/api-server run dev",
-    "dev:web": "pnpm --filter @workspace/team-optimizer run dev",
-    "build:pages": "node ./scripts/build-github-pages.mjs",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "dev": "vercel dev",
+    "db:migrate": "node ./scripts/migrate-vercel-api.mjs",
+    "codegen": "pnpm --filter @workspace/api-spec run codegen",
+    "build": "pnpm run db:migrate && pnpm run typecheck && pnpm --filter @workspace/team-optimizer run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm --filter @workspace/team-optimizer --filter @workspace/scripts --if-present run typecheck"
   },
   "private": true,
   "dependencies": {

@@ -141,7 +141,7 @@ paths:
       operationId: recommendTeam
       tags: [team]
       summary: Recommend an optimal team for a project
-      description: Picks the best team for the project based on skill, availability, and required role. Returns team members with scoring details and an AI-generated explanation.
+      description: Picks the best team for the project based on skill, availability, and required role. Returns team members with scoring details and either an AI-generated or deterministic explanation.
       requestBody:
         required: true
         content:
@@ -176,7 +176,7 @@ paths:
       operationId: getDashboardSummary
       tags: [dashboard]
       summary: Get dashboard summary statistics
-      description: Returns aggregate stats — totals, average load, role breakdown, top performers.
+      description: Returns aggregate stats: totals, average load, role breakdown, top performers.
       responses:
         "200":
           description: Dashboard summary
@@ -192,6 +192,12 @@ components:
       properties:
         status:
           type: string
+        database:
+          type: string
+        migration:
+          type: string
+        error:
+          type: string
       required:
         - status
 
@@ -200,8 +206,17 @@ components:
       properties:
         error:
           type: string
+        code:
+          type: string
+        requestId:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
       required:
         - error
+        - code
+        - requestId
 
     Employee:
       type: object
@@ -236,13 +251,16 @@ components:
 
     CreateEmployeeBody:
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
           minLength: 1
+          maxLength: 120
         role:
           type: string
           minLength: 1
+          maxLength: 80
         load:
           type: integer
           minimum: 0
@@ -259,13 +277,17 @@ components:
 
     UpdateEmployeeBody:
       type: object
+      additionalProperties: false
+      minProperties: 1
       properties:
         name:
           type: string
           minLength: 1
+          maxLength: 120
         role:
           type: string
           minLength: 1
+          maxLength: 80
         load:
           type: integer
           minimum: 0
@@ -277,15 +299,21 @@ components:
 
     RecommendTeamBody:
       type: object
+      additionalProperties: false
       properties:
         projectName:
           type: string
           minLength: 1
+          maxLength: 160
         projectDescription:
           type: string
+          minLength: 1
+          maxLength: 2000
         requiredRole:
           type: string
-          description: Optional role filter — only consider employees of this role
+          minLength: 1
+          maxLength: 80
+          description: Optional role filter; only consider employees of this role
         teamSize:
           type: integer
           minimum: 1

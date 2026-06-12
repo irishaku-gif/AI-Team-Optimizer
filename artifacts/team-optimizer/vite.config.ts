@@ -5,7 +5,6 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const rawPort = process.env.PORT ?? "5173";
-
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
@@ -16,9 +15,6 @@ const basePath = process.env.BASE_PATH ?? "/";
 const outDir = process.env.VITE_OUT_DIR
   ? path.resolve(import.meta.dirname, process.env.VITE_OUT_DIR)
   : path.resolve(import.meta.dirname, "dist/public");
-const apiProxyTarget =
-  process.env.API_PROXY_TARGET ??
-  (process.env.NODE_ENV !== "production" ? "http://127.0.0.1:3001" : undefined);
 
 export default defineConfig({
   base: basePath,
@@ -57,15 +53,6 @@ export default defineConfig({
     strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
-    proxy:
-      apiProxyTarget !== undefined
-        ? {
-            "/api": {
-              target: apiProxyTarget,
-              changeOrigin: true,
-            },
-          }
-        : undefined,
     fs: {
       strict: true,
     },
