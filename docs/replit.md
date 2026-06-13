@@ -2,7 +2,7 @@
 
 ## Overview
 
-AI Team Optimizer is now a production-only Vercel workspace. The React frontend is built from `artifacts/team-optimizer`, and all runtime API behavior lives in the serverless function `api/[...path].js`.
+AI Team Optimizer is now a production-only Vercel workspace. The React frontend is built from `frontend`, and all runtime API behavior lives in the serverless function `api/[...path].js`.
 
 There is no supported local Express API, memory storage mode, GitHub Pages static demo, or browser `localStorage` API shim.
 
@@ -21,7 +21,7 @@ There is no supported local Express API, memory storage mode, GitHub Pages stati
 
 - `pnpm run db:migrate` - apply `api/migrations.js` to the configured PostgreSQL database.
 - `pnpm run typecheck` - typecheck the active frontend/client workspace packages.
-- `pnpm run build` - run migrations, typecheck, and build `artifacts/team-optimizer/dist/public` for Vercel.
+- `pnpm run build` - run migrations, typecheck, and build `frontend/dist/public` for Vercel.
 - `pnpm run codegen` - regenerate `lib/api-client-react` from `lib/api-spec/openapi.yaml`.
 - `pnpm run dev` - use `vercel dev` for local Vercel-style development.
 
@@ -29,8 +29,8 @@ There is no supported local Express API, memory storage mode, GitHub Pages stati
 
 - `api/[...path].js` - production API source of truth. Handles health, employees CRUD, team recommendation, saved recommendations, and dashboard summary.
 - `api/migrations.js` - ordered SQL migration list. Do not create runtime tables inside request handlers.
-- `scripts/migrate-vercel-api.mjs` - migration runner used by `pnpm run db:migrate` and the production build.
-- `artifacts/team-optimizer` - React/Vite frontend.
+- `backend/scripts/migrate-vercel-api.mjs` - migration runner used by `pnpm run db:migrate` and the production build.
+- `frontend` - React/Vite frontend.
 - `lib/api-spec/openapi.yaml` - API contract used for generated client code.
 - `lib/api-client-react` - generated React Query client and custom fetch wrapper.
 

@@ -4,9 +4,9 @@
   "license": "MIT",
   "packageManager": "pnpm@10.25.0",
   "scripts": {
-    "preinstall": "node ./scripts/ensure-pnpm.mjs",
+    "preinstall": "node ./backend/scripts/ensure-pnpm.mjs",
     "dev": "vercel dev",
-    "db:migrate": "node ./scripts/migrate-vercel-api.mjs",
+    "db:migrate": "node ./backend/scripts/migrate-vercel-api.mjs",
     "codegen": "pnpm --filter @workspace/api-spec run codegen",
     "build": "pnpm run db:migrate && pnpm run typecheck && pnpm --filter @workspace/team-optimizer run build",
     "typecheck:libs": "tsc --build",

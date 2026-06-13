@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import pg from "pg";
 
 const require = createRequire(import.meta.url);
-const { migrations } = require("../api/migrations.js");
+const { migrations } = require("../../api/migrations.js");
 const { Pool } = pg;
 
 const CONNECTION_ENV_KEYS = [

@@ -21,8 +21,8 @@ The only supported execution mode is Vercel deployment with the React/Vite front
 
 - `api/[...path].js` is the production API source of truth.
 - `api/migrations.js` contains ordered SQL migrations.
-- `scripts/migrate-vercel-api.mjs` applies migrations before build/deploy.
-- `artifacts/team-optimizer` contains the React/Vite frontend.
+- `backend/scripts/migrate-vercel-api.mjs` applies migrations before build/deploy.
+- `frontend` contains the React/Vite frontend.
 - `lib/api-spec/openapi.yaml` is the API contract.
 - `lib/api-client-react` contains the generated frontend API client.
 
